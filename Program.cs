@@ -255,4 +255,110 @@ class Program
         }
     }
 
+
+    // ======================================
+    // EDIT STUDENT
+    // Finds a student and updates a field.
+    // ======================================
+    static void EditStudent()
+    {
+        Console.WriteLine("\n========== EDIT STUDENT ==========");
+
+        string studentNumber = ReadRequired("Enter Student Number: ");
+
+        Student? student = phonebook.FindStudent(studentNumber);
+
+        if (student == null)
+        {
+            Console.WriteLine("Student record not found.");
+            return;
+        }
+
+        Console.WriteLine("\nStudent Found:");
+        student.DisplayInformation();
+
+        while (true)
+        {
+            Console.WriteLine("\n========== EDIT MENU ==========");
+            Console.WriteLine("1. Student Number");
+            Console.WriteLine("2. Surname");
+            Console.WriteLine("3. Gender");
+            Console.WriteLine("4. Occupation");
+            Console.WriteLine("5. Country Code");
+            Console.WriteLine("6. Area Code");
+            Console.WriteLine("7. Phone Number");
+            Console.WriteLine("8. Return");
+            Console.WriteLine("===============================");
+            Console.Write("Select field to edit: ");
+
+            string choice = Console.ReadLine() ?? "";
+
+            switch (choice)
+            {
+                case "1":
+                    string newStudentNumber = ReadRequired("Enter New Student Number: ");
+
+                    if (phonebook.IsStudentNumberTaken(newStudentNumber))
+                    {
+                        Console.WriteLine("That student number is already being used.");
+                    }
+                    else
+                    {
+                        student.StudentNumber = newStudentNumber;
+                        Console.WriteLine("Student number updated successfully.");
+                    }
+                    break;
+
+                case "2":
+                    student.Surname = ReadRequired("Enter New Surname: ");
+                    Console.WriteLine("Surname updated successfully.");
+                    break;
+
+                case "3":
+                    student.Gender = ReadGender();
+                    Console.WriteLine("Gender updated successfully.");
+                    break;
+
+                case "4":
+                    student.Occupation = ReadRequired("Enter New Occupation: ");
+                    Console.WriteLine("Occupation updated successfully.");
+                    break;
+
+                case "5":
+                    Console.WriteLine("\nAvailable Countries:");
+
+                    foreach (Country country in Country.GetCountries())
+                    {
+                        Console.WriteLine(country.Name + " - " + country.Code);
+                    }
+
+                    student.CountryCode = ReadCountryCode();
+                    Console.WriteLine("Country code updated successfully.");
+                    break;
+
+                case "6":
+                    student.AreaCode = ReadRequired("Enter New Area Code: ");
+                    Console.WriteLine("Area code updated successfully.");
+                    break;
+
+                case "7":
+                    student.PhoneNumber = ReadRequired("Enter New Phone Number: ");
+                    Console.WriteLine("Phone number updated successfully.");
+                    break;
+
+                case "8":
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    break;
+            }
+
+            Console.WriteLine("\nUpdated Student Information:");
+            student.DisplayInformation();
+        }
+    }
+
+
+
 }

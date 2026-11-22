@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-// 
-// 1. STUDENT CLASS
-// 
-
-public class Student
+// ==========================================
+// STUDENT CLASS
+// Handles the information of each student.
+// ==========================================
+class Student
 {
-    // Student information
     public string StudentNumber { get; set; }
     public string Surname { get; set; }
     public string FirstName { get; set; }
@@ -18,10 +17,15 @@ public class Student
     public string AreaCode { get; set; }
     public string PhoneNumber { get; set; }
 
-    
-    public Student(string studentNumber, string surname,
-        string firstName, string occupation, string gender,
-        string countryCode, string areaCode, string phoneNumber)
+    public Student(
+        string studentNumber,
+        string surname,
+        string firstName,
+        string occupation,
+        string gender,
+        string countryCode,
+        string areaCode,
+        string phoneNumber)
     {
         StudentNumber = studentNumber;
         Surname = surname;
@@ -33,42 +37,39 @@ public class Student
         PhoneNumber = phoneNumber;
     }
 
-    // Get complete phone number
     public string GetCompletePhoneNumber()
     {
-        return CountryCode + "-" + AreaCode + "-" + PhoneNumber;
+        return "+" + CountryCode + " " + AreaCode + " " + PhoneNumber;
     }
 
-    // Display student information
     public void DisplayInformation()
     {
-        string genderDescription = Gender == "M" ? "male" : "female";
-
-        Console.WriteLine(
-            $"{Surname}, {FirstName}, with student number {StudentNumber}, " +
-            $"is a {Occupation} ({genderDescription}). " +
-            $"His/Her phone number is {GetCompletePhoneNumber()}");
+        Console.WriteLine("----------------------------------------");
+        Console.WriteLine("Student Number : " + StudentNumber);
+        Console.WriteLine("Name           : " + FirstName + " " + Surname);
+        Console.WriteLine("Occupation     : " + Occupation);
+        Console.WriteLine("Gender         : " + Gender);
+        Console.WriteLine("Country        : " + Country.GetCountryName(CountryCode));
+        Console.WriteLine("Phone Number   : " + GetCompletePhoneNumber());
     }
 }
 
 
-// 
-// 2. COUNTRY CLASS
-// 
-
-public class Country
+// ==========================================
+// COUNTRY CLASS
+// Handles the supported ASEAN countries.
+// ==========================================
+class Country
 {
     public string Name { get; set; }
     public string Code { get; set; }
 
-    // Constructor
     public Country(string name, string code)
     {
         Name = name;
         Code = code;
     }
 
-    // Get five supported ASEAN countries
     public static List<Country> GetCountries()
     {
         return new List<Country>
@@ -81,17 +82,73 @@ public class Country
         };
     }
 
-    // Get country name using country code
     public static string GetCountryName(string code)
     {
-        foreach (Country country in GetCountries())
-        {
-            if (country.Code == code)
-            {
-                return country.Name;
-            }
-        }
+        Country? country = GetCountries()
+            .FirstOrDefault(c => c.Code == code);
 
-        return "Unknown Country";
+        return country == null ? "Unknown Country" : country.Name;
+    }
+
+    public static bool IsValidCode(string code)
+    {
+        return GetCountries().Any(c => c.Code == code);
     }
 }
+
+
+// ==========================================
+// PHONEBOOK CLASS
+// Manages the collection of student records.
+// ==========================================
+class Phonebook
+{
+    private List<Student> students = new List<Student>();
+
+    // Add a new student.
+    public bool AddStudent(Student student)
+    {
+        if (FindStudent(student.StudentNumber) != null)
+        {
+            return false;
+        }
+
+        students.Add(student);
+        return true;
+    }
+
+    // Find a student using their student number.
+    public Student? FindStudent(string studentNumber)
+    {
+        return students.FirstOrDefault(
+            s => s.StudentNumber.Equals(
+                studentNumber,
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    // Check whether a student number is already used.
+    public bool IsStudentNumberTaken(string studentNumber)
+    {
+        return FindStudent(studentNumber) != null;
+    }
+
+    // Retrieve all students alphabetically by surname.
+    public List<Student> GetAllStudents()
+    {
+        return students
+            .OrderBy(s => s.Surname)
+            .ThenBy(s => s.FirstName)
+            .ToList();
+    }
+
+    // Retrieve students from selected countries.
+    public List<Student> GetStudentsByCountryCodes(List<string> countryCodes)
+    {
+        return students
+            .Where(s => countryCodes.Contains(s.CountryCode))
+            .OrderBy(s => s.Surname)
+            .ThenBy(s => s.FirstName)
+            .ToList();
+    }
+}
+

@@ -152,3 +152,107 @@ class Phonebook
     }
 }
 
+// ==========================================
+// PROGRAM CLASS
+// Handles the main menu and user interaction.
+// ==========================================
+class Program
+{
+    static Phonebook phonebook = new Phonebook();
+
+    static void Main(string[] args)
+    {
+        while (true)
+        {
+            Console.WriteLine("\n========================================");
+            Console.WriteLine("             ASEAN PHONEBOOK");
+            Console.WriteLine("========================================");
+            Console.WriteLine("1. Store Student");
+            Console.WriteLine("2. Edit Student");
+            Console.WriteLine("3. Search by Country");
+            Console.WriteLine("4. Exit");
+            Console.WriteLine("========================================");
+            Console.Write("Enter your choice: ");
+
+            string choice = Console.ReadLine() ?? "";
+
+            switch (choice)
+            {
+                case "1":
+                    StoreStudent();
+                    break;
+
+                case "2":
+                    EditStudent();
+                    break;
+
+                case "3":
+                    SearchByCountry();
+                    break;
+
+                case "4":
+                    Console.WriteLine("Thank you for using ASEAN Phonebook!");
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    break;
+            }
+        }
+    }
+
+
+    // ======================================
+    // STORE STUDENT
+    // Collects information and adds a record.
+    // ======================================
+    static void StoreStudent()
+    {
+        Console.WriteLine("\n========== STORE STUDENT ==========");
+
+        string studentNumber = ReadRequired("Student Number: ");
+
+        if (phonebook.IsStudentNumberTaken(studentNumber))
+        {
+            Console.WriteLine("A student with that number already exists.");
+            return;
+        }
+
+        string surname = ReadRequired("Surname: ");
+        string firstName = ReadRequired("First Name: ");
+        string occupation = ReadRequired("Occupation: ");
+        string gender = ReadGender();
+
+        Console.WriteLine("\nAvailable Countries:");
+
+        foreach (Country country in Country.GetCountries())
+        {
+            Console.WriteLine(country.Name + " - " + country.Code);
+        }
+
+        string countryCode = ReadCountryCode();
+        string areaCode = ReadRequired("Area Code: ");
+        string phoneNumber = ReadRequired("Phone Number: ");
+
+        Student newStudent = new Student(
+            studentNumber,
+            surname,
+            firstName,
+            occupation,
+            gender,
+            countryCode,
+            areaCode,
+            phoneNumber
+        );
+
+        if (phonebook.AddStudent(newStudent))
+        {
+            Console.WriteLine("\nStudent record successfully stored!");
+        }
+        else
+        {
+            Console.WriteLine("\nUnable to store student record.");
+        }
+    }
+
+}

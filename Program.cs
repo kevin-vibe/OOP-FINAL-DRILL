@@ -1,18 +1,36 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// ==========================================
-// STUDENT CLASS
-// Handles the information of each student.
-// ==========================================
-class Student
+// 
+// PERSON CLASS (PARENT)
+// Stores common personal information.
+// 
+class Person
+{
+    public string FirstName { get; set; }
+    public string Surname { get; set; }
+    public string Gender { get; set; }
+
+    public Person(string firstName, string surname, string gender)
+    {
+        FirstName = firstName;
+        Surname = surname;
+        Gender = gender;
+    }
+}
+
+
+// 
+// STUDENT CLASS (CHILD)
+// Inherits personal information from Person.
+// Handles student information.
+// 
+class Student : Person
 {
     public string StudentNumber { get; set; }
-    public string Surname { get; set; }
-    public string FirstName { get; set; }
     public string Occupation { get; set; }
-    public string Gender { get; set; }
     public string CountryCode { get; set; }
     public string AreaCode { get; set; }
     public string PhoneNumber { get; set; }
@@ -26,22 +44,22 @@ class Student
         string countryCode,
         string areaCode,
         string phoneNumber)
+        : base(firstName, surname, gender)
     {
         StudentNumber = studentNumber;
-        Surname = surname;
-        FirstName = firstName;
         Occupation = occupation;
-        Gender = gender;
         CountryCode = countryCode;
         AreaCode = areaCode;
         PhoneNumber = phoneNumber;
     }
 
+    // Get the complete phone number.
     public string GetCompletePhoneNumber()
     {
         return "+" + CountryCode + " " + AreaCode + " " + PhoneNumber;
     }
 
+    // Display student information.
     public void DisplayInformation()
     {
         Console.WriteLine("----------------------------------------");
@@ -55,10 +73,10 @@ class Student
 }
 
 
-// ==========================================
+// 
 // COUNTRY CLASS
 // Handles the supported ASEAN countries.
-// ==========================================
+// 
 class Country
 {
     public string Name { get; set; }
@@ -70,6 +88,7 @@ class Country
         Code = code;
     }
 
+    // Retrieve all supported countries.
     public static List<Country> GetCountries()
     {
         return new List<Country>
@@ -82,6 +101,7 @@ class Country
         };
     }
 
+    // Get country name using its code.
     public static string GetCountryName(string code)
     {
         Country? country = GetCountries()
@@ -90,6 +110,7 @@ class Country
         return country == null ? "Unknown Country" : country.Name;
     }
 
+    // Check whether the country code is valid.
     public static bool IsValidCode(string code)
     {
         return GetCountries().Any(c => c.Code == code);
@@ -97,10 +118,10 @@ class Country
 }
 
 
-// ==========================================
+// 
 // PHONEBOOK CLASS
 // Manages the collection of student records.
-// ==========================================
+// 
 class Phonebook
 {
     private List<Student> students = new List<Student>();
@@ -152,65 +173,93 @@ class Phonebook
     }
 }
 
-// ==========================================
-// PROGRAM CLASS
-// Handles the main menu and user interaction.
-// ==========================================
-class Program
-{
-    static Phonebook phonebook = new Phonebook();
 
-    static void Main(string[] args)
+// 
+// INPUT HELPER CLASS
+// Handles input and validation methods.
+// 
+class InputHelper
+{
+    // Read input that cannot be empty.
+    public static string ReadRequired(string message)
     {
         while (true)
         {
-            Console.WriteLine("\n========================================");
-            Console.WriteLine("             ASEAN PHONEBOOK");
-            Console.WriteLine("========================================");
-            Console.WriteLine("1. Store Student");
-            Console.WriteLine("2. Edit Student");
-            Console.WriteLine("3. Search by Country");
-            Console.WriteLine("4. Exit");
-            Console.WriteLine("========================================");
-            Console.Write("Enter your choice: ");
+            Console.Write(message);
+            string input = (Console.ReadLine() ?? "").Trim();
 
-            string choice = Console.ReadLine() ?? "";
-
-            switch (choice)
+            if (!string.IsNullOrWhiteSpace(input))
             {
-                case "1":
-                    StoreStudent();
-                    break;
-
-                case "2":
-                    EditStudent();
-                    break;
-
-                case "3":
-                    SearchByCountry();
-                    break;
-
-                case "4":
-                    Console.WriteLine("Thank you for using ASEAN Phonebook!");
-                    return;
-
-                default:
-                    Console.WriteLine("Invalid choice. Please try again.");
-                    break;
+                return input;
             }
+
+            Console.WriteLine("This field cannot be empty.");
         }
     }
 
+    // Read and validate gender.
+    public static string ReadGender()
+    {
+        while (true)
+        {
+            Console.Write("Gender (M/F): ");
+            string gender = (Console.ReadLine() ?? "").Trim().ToUpper();
 
-    // ======================================
+            if (gender == "M" || gender == "F")
+            {
+                return gender;
+            }
+
+            Console.WriteLine("Invalid gender. Please enter M or F.");
+        }
+    }
+
+    // Read and validate country code.
+    public static string ReadCountryCode()
+    {
+        while (true)
+        {
+            Console.Write("Enter Country Code: ");
+            string code = (Console.ReadLine() ?? "").Trim();
+
+            if (Country.IsValidCode(code))
+            {
+                return code;
+            }
+
+            Console.WriteLine("Invalid country code. Please select one of the listed countries.");
+        }
+    }
+}
+
+
+// 
+// PHONEBOOK UI CLASS
+// Handles user interaction and phonebook
+// operations storing, editing,
+// and searching student records.
+//
+class PhonebookUI
+{
+    private Phonebook phonebook;
+
+    // Constructor receives the Phonebook object.
+    public PhonebookUI(Phonebook phonebook)
+    {
+        this.phonebook = phonebook;
+    }
+
+
+    // 
     // STORE STUDENT
     // Collects information and adds a record.
-    // ======================================
-    static void StoreStudent()
+    // 
+    public void StoreStudent()
     {
         Console.WriteLine("\n========== STORE STUDENT ==========");
 
-        string studentNumber = ReadRequired("Student Number: ");
+        string studentNumber =
+            InputHelper.ReadRequired("Student Number: ");
 
         if (phonebook.IsStudentNumberTaken(studentNumber))
         {
@@ -218,10 +267,10 @@ class Program
             return;
         }
 
-        string surname = ReadRequired("Surname: ");
-        string firstName = ReadRequired("First Name: ");
-        string occupation = ReadRequired("Occupation: ");
-        string gender = ReadGender();
+        string surname = InputHelper.ReadRequired("Surname: ");
+        string firstName = InputHelper.ReadRequired("First Name: ");
+        string occupation = InputHelper.ReadRequired("Occupation: ");
+        string gender = InputHelper.ReadGender();
 
         Console.WriteLine("\nAvailable Countries:");
 
@@ -230,9 +279,9 @@ class Program
             Console.WriteLine(country.Name + " - " + country.Code);
         }
 
-        string countryCode = ReadCountryCode();
-        string areaCode = ReadRequired("Area Code: ");
-        string phoneNumber = ReadRequired("Phone Number: ");
+        string countryCode = InputHelper.ReadCountryCode();
+        string areaCode = InputHelper.ReadRequired("Area Code: ");
+        string phoneNumber = InputHelper.ReadRequired("Phone Number: ");
 
         Student newStudent = new Student(
             studentNumber,
@@ -256,15 +305,16 @@ class Program
     }
 
 
-    // ======================================
+    // 
     // EDIT STUDENT
     // Finds a student and updates a field.
-    // ======================================
-    static void EditStudent()
+    // 
+    public void EditStudent()
     {
         Console.WriteLine("\n========== EDIT STUDENT ==========");
 
-        string studentNumber = ReadRequired("Enter Student Number: ");
+        string studentNumber =
+            InputHelper.ReadRequired("Enter Student Number: ");
 
         Student? student = phonebook.FindStudent(studentNumber);
 
@@ -296,9 +346,13 @@ class Program
             switch (choice)
             {
                 case "1":
-                    string newStudentNumber = ReadRequired("Enter New Student Number: ");
+                    string newStudentNumber =
+                        InputHelper.ReadRequired("Enter New Student Number: ");
 
-                    if (phonebook.IsStudentNumberTaken(newStudentNumber))
+                    if (!student.StudentNumber.Equals(
+                        newStudentNumber,
+                        StringComparison.OrdinalIgnoreCase)
+                        && phonebook.IsStudentNumberTaken(newStudentNumber))
                     {
                         Console.WriteLine("That student number is already being used.");
                     }
@@ -310,17 +364,22 @@ class Program
                     break;
 
                 case "2":
-                    student.Surname = ReadRequired("Enter New Surname: ");
+                    student.Surname =
+                        InputHelper.ReadRequired("Enter New Surname: ");
+
                     Console.WriteLine("Surname updated successfully.");
                     break;
 
                 case "3":
-                    student.Gender = ReadGender();
+                    student.Gender = InputHelper.ReadGender();
+
                     Console.WriteLine("Gender updated successfully.");
                     break;
 
                 case "4":
-                    student.Occupation = ReadRequired("Enter New Occupation: ");
+                    student.Occupation =
+                        InputHelper.ReadRequired("Enter New Occupation: ");
+
                     Console.WriteLine("Occupation updated successfully.");
                     break;
 
@@ -332,17 +391,22 @@ class Program
                         Console.WriteLine(country.Name + " - " + country.Code);
                     }
 
-                    student.CountryCode = ReadCountryCode();
+                    student.CountryCode = InputHelper.ReadCountryCode();
+
                     Console.WriteLine("Country code updated successfully.");
                     break;
 
                 case "6":
-                    student.AreaCode = ReadRequired("Enter New Area Code: ");
+                    student.AreaCode =
+                        InputHelper.ReadRequired("Enter New Area Code: ");
+
                     Console.WriteLine("Area code updated successfully.");
                     break;
 
                 case "7":
-                    student.PhoneNumber = ReadRequired("Enter New Phone Number: ");
+                    student.PhoneNumber =
+                        InputHelper.ReadRequired("Enter New Phone Number: ");
+
                     Console.WriteLine("Phone number updated successfully.");
                     break;
 
@@ -359,11 +423,12 @@ class Program
         }
     }
 
-    // ======================================
+
+    // 
     // SEARCH BY COUNTRY
-    // Allows single or multiple selections.
-    // ======================================
-    static void SearchByCountry()
+    // 
+     
+    public void SearchByCountry()
     {
         Console.WriteLine("\n========== SEARCH BY COUNTRY ==========");
 
@@ -424,7 +489,9 @@ class Program
             }
 
             selectedCodes.Add(selectedCode);
-            Console.WriteLine(Country.GetCountryName(selectedCode) + " added to search.");
+
+            Console.WriteLine(
+                Country.GetCountryName(selectedCode) + " added to search.");
         }
 
         if (selectedCodes.Count == 0)
@@ -433,7 +500,8 @@ class Program
             return;
         }
 
-        List<Student> results = phonebook.GetStudentsByCountryCodes(selectedCodes);
+        List<Student> results =
+            phonebook.GetStudentsByCountryCodes(selectedCodes);
 
         Console.WriteLine("\n========== SEARCH RESULTS ==========");
 
@@ -452,61 +520,56 @@ class Program
 
         Console.WriteLine("----------------------------------------");
     }
+}
 
-    // ======================================
-    // INPUT METHODS
-    // Reusable methods for validating input.
-    // ======================================
-    static string ReadRequired(string message)
+
+//
+// PROGRAM 
+// Handles the main menu and program execution.
+// 
+class Program
+{
+    static void Main(string[] args)
     {
+        Phonebook phonebook = new Phonebook();
+        PhonebookUI ui = new PhonebookUI(phonebook);
+
         while (true)
         {
-            Console.Write(message);
-            string input = (Console.ReadLine() ?? "").Trim();
+            Console.WriteLine("\n========================================");
+            Console.WriteLine("             ASEAN PHONEBOOK");
+            Console.WriteLine("========================================");
+            Console.WriteLine("1. Store Student");
+            Console.WriteLine("2. Edit Student");
+            Console.WriteLine("3. Search by Country");
+            Console.WriteLine("4. Exit");
+            Console.WriteLine("========================================");
+            Console.Write("Enter your choice: ");
 
-            if (!string.IsNullOrWhiteSpace(input))
+            string choice = Console.ReadLine() ?? "";
+
+            switch (choice)
             {
-                return input;
-            }
+                case "1":
+                    ui.StoreStudent();
+                    break;
 
-            Console.WriteLine("This field cannot be empty.");
+                case "2":
+                    ui.EditStudent();
+                    break;
+
+                case "3":
+                    ui.SearchByCountry();
+                    break;
+
+                case "4":
+                    Console.WriteLine("Thank you for using ASEAN Phonebook!");
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    break;
+            }
         }
     }
-
-    static string ReadGender()
-    {
-        while (true)
-        {
-            Console.Write("Gender (M/F): ");
-            string gender = (Console.ReadLine() ?? "").Trim().ToUpper();
-
-            if (gender == "M" || gender == "F")
-            {
-                return gender;
-            }
-
-            Console.WriteLine("Invalid gender. Please enter M or F.");
-        }
-    }
-
-    static string ReadCountryCode()
-    {
-        while (true)
-        {
-            Console.Write("Enter Country Code: ");
-            string code = (Console.ReadLine() ?? "").Trim();
-
-            if (Country.IsValidCode(code))
-            {
-                return code;
-            }
-
-            Console.WriteLine("Invalid country code. Please select one of the listed countries.");
-        }
-    }
-
-
-
-
-
 }
